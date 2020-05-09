@@ -7,14 +7,19 @@ from webdriver_manager.chrome import ChromeDriverManager
 from products.models import ProductDb, CategoryDb, UserPersonalDb
 from users.models import User
 
+chrome_options = webdriver.ChromeOptions()
+chrome_options.headless = True
+
 
 class SeleniumTests(LiveServerTestCase):
-
+    """ Functional tests using the Chrome web browser in headless mode """
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.selenium = webdriver.Chrome(ChromeDriverManager().install())
+        cls.selenium = webdriver.Chrome(chrome_options=chrome_options)
+        cls.selenium.get(cls.live_server_url)
         cls.selenium.implicitly_wait(10)
+        cls.selenium.maximize_window()
 
     @classmethod
     def tearDownClass(cls):

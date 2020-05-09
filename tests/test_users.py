@@ -1,19 +1,24 @@
 from selenium import webdriver
 from django.test import LiveServerTestCase
 from selenium.common.exceptions import NoSuchElementException
-from webdriver_manager.chrome import ChromeDriverManager
+#from webdriver_manager.chrome import ChromeDriverManager
 from django.test import TestCase
 from django.urls import reverse
 from users.forms import RegistrationForm, LoginForm
 from users.models import User
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.headless = True
 
 
 class SeleniumTests(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.selenium = webdriver.Chrome(ChromeDriverManager().install())
+        cls.selenium = webdriver.Chrome(chrome_options=chrome_options)
+        cls.selenium.get(cls.live_server_url)
         cls.selenium.implicitly_wait(10)
+        cls.selenium.maximize_window()
 
     @classmethod
     def tearDownClass(cls):
