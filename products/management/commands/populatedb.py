@@ -1,7 +1,7 @@
 from abc import ABC
 
 from django.core.management.base import BaseCommand
-from products.dbBuilder import *
+from products.dbbuilder import *
 
 
 class Command(BaseCommand, ABC):
