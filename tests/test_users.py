@@ -1,22 +1,23 @@
 from selenium import webdriver
 from django.test import LiveServerTestCase
 from selenium.common.exceptions import NoSuchElementException
-#from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 from django.test import TestCase
 from django.urls import reverse
 from users.forms import RegistrationForm, LoginForm
 from users.models import User
 
-chrome_options = webdriver.ChromeOptions()
-chrome_options.headless = True
+#chrome_options = webdriver.ChromeOptions()
+#chrome_options.headless = True
 
 
 class SeleniumTests(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.selenium = webdriver.Chrome(chrome_options=chrome_options)
-        cls.selenium.get(cls.live_server_url)
+        cls.selenium = webdriver.Chrome(ChromeDriverManager().install())
+        #cls.selenium = webdriver.Chrome(chrome_options=chrome_options)
         cls.selenium.implicitly_wait(10)
         cls.selenium.maximize_window()
 
@@ -30,12 +31,12 @@ class SeleniumTests(LiveServerTestCase):
 
     def test_signup_right_info(self):
         self.selenium.get(self.live_server_url + '/users/signup')
-        first_name = self.selenium.find_element_by_name('first_name')
-        last_name = self.selenium.find_element_by_name('last_name')
-        email1 = self.selenium.find_element_by_name('email')
-        password1 = self.selenium.find_element_by_name('password1')
-        password2 = self.selenium.find_element_by_name('password2')
-        submit = self.selenium.find_element_by_id('logforms')
+        first_name = self.selenium.find_element(By.NAME, 'first_name')
+        last_name = self.selenium.find_element(By.NAME, 'last_name')
+        email1 = self.selenium.find_element(By.NAME, 'email')
+        password1 = self.selenium.find_element(By.NAME, 'password1')
+        password2 = self.selenium.find_element(By.NAME, 'password2')
+        submit = self.selenium.find_element(By.ID, 'logforms')
         first_name.send_keys('Robert')
         last_name.send_keys('Redford')
         email1.send_keys('rob@gmail.com')
@@ -46,12 +47,12 @@ class SeleniumTests(LiveServerTestCase):
 
     def test_signup_wrong_email(self):
         self.selenium.get(self.live_server_url + '/users/signup')
-        first_name = self.selenium.find_element_by_name('first_name')
-        last_name = self.selenium.find_element_by_name('last_name')
-        email1 = self.selenium.find_element_by_name('email')
-        password1 = self.selenium.find_element_by_name('password1')
-        password2 = self.selenium.find_element_by_name('password2')
-        submit = self.selenium.find_element_by_id('logforms')
+        first_name = self.selenium.find_element(By.NAME, 'first_name')
+        last_name = self.selenium.find_element(By.NAME, 'last_name')
+        email1 = self.selenium.find_element(By.NAME, 'email')
+        password1 = self.selenium.find_element(By.NAME, 'password1')
+        password2 = self.selenium.find_element(By.NAME, 'password2')
+        submit = self.selenium.find_element(By.ID, 'logforms')
         first_name.send_keys('George')
         last_name.send_keys('Clooney')
         email1.send_keys('georgegmail.com')
@@ -59,19 +60,19 @@ class SeleniumTests(LiveServerTestCase):
         password2.send_keys('george1234')
         submit.click()
         try:
-            error_email = self.selenium.find_element_by_xpath('//*[text()="Saisissez une adresse de courriel valide."]')
+            error_email = self.selenium.find_element(By.XPATH, '//*[text()="Saisissez une adresse de courriel valide."]')
         except NoSuchElementException:
             self.fail('Impossible de trouver le message d\'erreur')
         self.assertTrue(error_email.is_displayed())
 
     def test_signup_wrong_password(self):
         self.selenium.get(self.live_server_url + '/users/signup')
-        first_name = self.selenium.find_element_by_name('first_name')
-        last_name = self.selenium.find_element_by_name('last_name')
-        email1 = self.selenium.find_element_by_name('email')
-        password1 = self.selenium.find_element_by_name('password1')
-        password2 = self.selenium.find_element_by_name('password2')
-        submit = self.selenium.find_element_by_id('logforms')
+        first_name = self.selenium.find_element(By.NAME, 'first_name')
+        last_name = self.selenium.find_element(By.NAME, 'last_name')
+        email1 = self.selenium.find_element(By.NAME, 'email')
+        password1 = self.selenium.find_element(By.NAME, 'password1')
+        password2 = self.selenium.find_element(By.NAME, 'password2')
+        submit = self.selenium.find_element(By.ID, 'logforms')
         first_name.send_keys('Brad')
         last_name.send_keys('Pitt')
         email1.send_keys('brad@gmail.com')
@@ -79,7 +80,7 @@ class SeleniumTests(LiveServerTestCase):
         password2.send_keys('brad123')
         submit.click()
         try:
-            error_email = self.selenium.find_element_by_xpath('//*[text()="Les mots de passe ne correspondent pas. '
+            error_email = self.selenium.find_element(By.XPATH, '//*[text()="Les mots de passe ne correspondent pas. '
                                                               'Veuillez les saisir à nouveau."]')
         except NoSuchElementException:
             self.fail('Impossible de trouver le message d\'erreur')
@@ -87,9 +88,9 @@ class SeleniumTests(LiveServerTestCase):
 
     def test_login_right_info(self):
         self.selenium.get(self.live_server_url + '/users/login')
-        email = self.selenium.find_element_by_name('email')
-        password = self.selenium.find_element_by_name('password')
-        submit = self.selenium.find_element_by_id('logforms')
+        email = self.selenium.find_element(By.NAME, 'email')
+        password = self.selenium.find_element(By.NAME, 'password')
+        submit = self.selenium.find_element(By.ID, 'logforms')
         email.send_keys('jLennon@gmail.com')
         password.send_keys('john1234')
         submit.click()
@@ -97,14 +98,14 @@ class SeleniumTests(LiveServerTestCase):
 
     def test_login_wrong_email_and_or_password(self):
         self.selenium.get(self.live_server_url + '/users/login')
-        email = self.selenium.find_element_by_name('email')
-        password = self.selenium.find_element_by_name('password')
-        submit = self.selenium.find_element_by_id('logforms')
+        email = self.selenium.find_element(By.NAME, 'email')
+        password = self.selenium.find_element(By.NAME, 'password')
+        submit = self.selenium.find_element(By.ID, 'logforms')
         email.send_keys('johngmail.com')
         password.send_keys('john1234')
         submit.click()
         try:
-            error_email = self.selenium.find_element_by_xpath('//*[text()="L\'email et/ou le mot de passe sont '
+            error_email = self.selenium.find_element(By.XPATH, '//*[text()="L\'email et/ou le mot de passe sont '
                                                               'invalides. Veuillez saisir à nouveau vos identifiants '
                                                               'ou créer un compte."]')
         except NoSuchElementException:

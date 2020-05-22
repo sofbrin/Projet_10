@@ -4,35 +4,32 @@ from products.models import CategoryDb, ProductDb
 
 
 def check_categories():
-    """response = requests.get('https://fr.openfoodfacts.org/categories.json')
-    data = response.json()
-    categories = data['tags']
-    selected_cat = categories[50]
-    for category in selected_cat:
-        try:
-            CategoryDb.objects.get(name=category['name'])
+    db_cat = CategoryDb.objects.select_cat_names()
 
-        except ObjectDoesNotExist:
-            break"""
-
-    db_cat = CategoryDb.objects.filter.values_list('name', flat=True)
     response = requests.get('https://fr.openfoodfacts.org/categories.json')
     data = response.json()
     api_cat = data['tags']
-    for cat in api_cat:
-        if cat in db_cat:
-            check_products(cat)
+
+    shared_cats = {cat: api_cat[cat] for cat in api_cat if cat['name'] in db_cat and api_cat[cat]['name'] == db_cat[cat]['name']}
+    print(len(shared_cats))
+
+    """for cat in api_cat:
+        if cat['name'] in db_cat and api_cat[cat]['name'] == db_cat['name']:
+            check_products(cat['name'], db_cat(cat.name))
+
         else:
-            print('message d\'erreur')
+            print('1message d\'erreur')"""
 
 
-def check_products(category):
-    db_prod = ProductDb.objects.filter(category=category)
+def check_products(categoryApi, categoryDb):
+    db_prod = ProductDb.objects.get_cat(categoryDb)
+    print(db_prod)
     page = 1
     r_products = requests.get('https://world.openfoodfacts.org/cgi/search.pl', params={
         'tagtype': 'categories',
         'tag_contains_0': 'contains',
-        'tag_0': category['id'],
+        'tag_0': categoryApi['id'],
+        'json': 1,
         'page_size': 50,
         'action': 'process',
         'page': page
@@ -40,17 +37,16 @@ def check_products(category):
     response = r_products.json()
     api_prod = response['products']
     for prod in api_prod:
-        if prod in db_prod:
-            compare_product(prod, category)
+        if prod['name'] in db_prod and api_prod[prod]['product_name'] == db_prod[prod]['product_name']:
+            compare_product(api_prod[prod], db_prod[prod])
         else:
             print('message d\'erreur')
     page += 1
 
 
-def compare_product(product, category):
-    api_product = product
-    db_category = CategoryDb.objects.get(name=category['name'])
-    db_product = ProductDb.objects.get(name=product['product_name'], category=db_category)
+def compare_product(api_product, db_product):
+    #db_category = CategoryDb.objects.get_cat(category)
+    ProductDb.objects.get_prod(db_product)
 
     if api_product['nutrition_grades'] != db_product.nutriscore:
         db_product.nutriscore = api_product['nutrition_grades']
@@ -66,12 +62,3 @@ def compare_product(product, category):
         db_product.salt = api_product['nutriments']['salt']
     db_product.save()
     print('Le produit ' + db_product.name + ' de la catégorie ' + db_product.category + ' a été mis à jour.')
-
-
-
-
-
-
-
-
-

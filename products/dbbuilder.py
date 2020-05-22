@@ -9,7 +9,7 @@ from products.models import CategoryDb, ProductDb
 
 
 def select_categories(limit_cat):
-    """ Selecting the categories according the number entered by the user (management command: populateDb.py) """
+    """ Selecting the categories according the number entered by the user (management command: populatedb.py) """
     if CategoryDb.objects.all().count() != 0:
         return
 
