@@ -1,8 +1,8 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from django.test import LiveServerTestCase
 from django.test import TestCase, SimpleTestCase
 from django.urls import reverse
-from webdriver_manager.chrome import ChromeDriverManager
 
 from products.models import ProductDb, CategoryDb, UserPersonalDb
 from users.models import User
@@ -29,7 +29,7 @@ class SeleniumTests(LiveServerTestCase):
     def test_link_product_redirects_OFF_detail_product(self):
         self.selenium.get('http://127.0.0.1:8000/products/product/352/')
         called_url = 'https://world.openfoodfacts.org/product/3272770003148/pure-goat-chavroux'
-        self.selenium.find_element_by_link_text("Voir la fiche sur le site d'Open Food Facts").click()
+        self.selenium.find_element(By.LINK_TEXT, "Voir la fiche sur le site d'Open Food Facts").click()
         self.assertEqual(self.selenium.current_url, called_url)
 
 
