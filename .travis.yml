@@ -16,7 +16,7 @@ before_script:
 
 env:
   global:
-    - DJANGO_SETTINGS_MODULE= "settings.travis"
+    - DJANGO_SETTINGS_MODULE="settings.travis"
 
 services:
   - postgresql
