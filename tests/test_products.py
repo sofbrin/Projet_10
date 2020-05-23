@@ -76,7 +76,7 @@ class TestViewsProducts(TestCase):
 
     def test_results_returns_200(self):
         product = self.product
-        response = self.client.post(reverse('results'), {'query': product})
+        response = self.client.get(reverse('results'), {'query': product})
         self.assertEqual(response.status_code, 200)
 
     def test_search_returns_nothing(self):
