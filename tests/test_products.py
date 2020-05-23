@@ -68,7 +68,7 @@ class TestViewsProducts(TestCase):
 
     def test_results_returns_better_nutriscore(self):
         product = self.product
-        response = self.client.post(reverse('results'), {'query': product.name})
+        response = self.client.get(reverse('results'), {'query': product.name})
         context = response.context
         substitutes = context['substitutes']
         for substitute in substitutes:
