@@ -10,28 +10,27 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class SelectManager(models.Manager):
-    def select_cat_names(self):
+class CategoryManager(models.Manager):
+    def select_cat(self):
         return self.values_list('name', flat=True)
-
-    def select_cat(self, category):
-        return self.filter(name=category['name'])
-
-    def get_cat(self, category):
-        return self.get(name=category[1])
-
-    def get_prod(self, product):
-        return self.get(name=product['product_name'])
 
 
 class CategoryDb(BaseModel):
     name = models.CharField(max_length=255)
     url = models.URLField(max_length=255)
 
-    objects = SelectManager()
+    objects = CategoryManager()
 
     def __str__(self):
         return self.name
+
+
+class ProductManager(models.Manager):
+    def select_prod(self, category):
+        return self.filter(category_id__name=category['name']).values_list('url', flat=True)
+
+    def get_prod(self, product):
+        return self.get(url=product['url'])
 
 
 class ProductDb(BaseModel):
@@ -45,7 +44,7 @@ class ProductDb(BaseModel):
     salt = models.FloatField()
     category = models.ForeignKey(CategoryDb, on_delete=models.CASCADE)
 
-    objects = SelectManager()
+    objects = ProductManager()
 
     def __str__(self):
         return self.name
