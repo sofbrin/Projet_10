@@ -12,14 +12,12 @@ def check_categories():
 
     for category in api_cat:
         if category['name'] in db_cat:
-            #print(category['name'])
             update_products(category)
 
 
 def update_products(category):
     print(category['name'])
     db_prod = ProductDb.objects.select_prod(category)
-    #print(db_prod)
 
     page = 1
     response = requests.get('https://world.openfoodfacts.org/cgi/search.pl', params={
@@ -36,7 +34,6 @@ def update_products(category):
 
     for product in api_prod:
         if product['url'] in db_prod:
-            #print('yes ' + product['product_name'] + ' is in db' )
             save_product(product)
 
     page += 1
