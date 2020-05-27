@@ -16,7 +16,7 @@ def check_categories():
 
 
 def update_products(category):
-    print(category['name'])
+    print('\n'+'\033[34m' + category['name'] + '\033[0m')
     db_prod = ProductDb.objects.select_prod(category)
 
     page = 1
@@ -34,6 +34,7 @@ def update_products(category):
 
     for product in api_prod:
         if product['url'] in db_prod:
+            #print(product['product_name'])
             save_product(product)
 
     page += 1
