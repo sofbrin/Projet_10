@@ -43,6 +43,7 @@ def update_products(category):
 def save_product(api_product):
     db_product = ProductDb.objects.get_prod(api_product)
 
+    db_product.name = api_product['product_name']
     db_product.nutriscore = api_product['nutrition_grades']
     db_product.image = api_product['image_front_url']
     db_product.fat = api_product['nutriments']['fat']
