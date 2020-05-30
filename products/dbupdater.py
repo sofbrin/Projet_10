@@ -1,54 +1,55 @@
 import requests
-from django.core.exceptions import ObjectDoesNotExist
 from products.models import CategoryDb, ProductDb
 
 
-def check_categories():
-    db_cat = CategoryDb.objects.select_cat()
+class ProductUpdater:
+    def __init__(self):
+        self.url = 'https://world.openfoodfacts.org/cgi/search.pl'
+        self.params = {
+            'tagtype_0': 'countries',
+            'tag_contains_0': 'contains',
+            'tag_0': 'france',
+            'tagtype_1': 'categories',
+            'tag_contains_1': 'contains',
+            'tag_1': '',
+            'json': 1,
+            'page_size': 1000,
+            'action': 'process',
+            'page': 1,
+            'fields': 'product_name,url,image_front_url,nutrition_grades,nutriments'
+        }
 
-    response = requests.get('https://fr.openfoodfacts.org/categories.json')
-    data = response.json()
-    api_cat = data['tags']
+    def check_products(self, n_products):
+        self.params['page_size'] = n_products
+        db_cat = CategoryDb.objects.select_cat()
 
-    for category in api_cat:
-        if category['name'] in db_cat:
-            update_products(category)
+        for category in db_cat:
+            self._update(category)
 
+    def _update(self, category):
+        print('\n' + '\033[34m' + category + '\033[0m')
+        self.params['tag_1'] = category
+        response = requests.get(self.url, params=self.params)
+        data = response.json()
+        api_prod = data['products']
+        db_prod = ProductDb.objects.select_prod(category)
 
-def update_products(category):
-    print('\n'+'\033[34m' + category['name'] + '\033[0m')
-    db_prod = ProductDb.objects.select_prod(category)
+        for api_product in api_prod:
+            if api_product['url'] in db_prod:
+                url_prefix = "/".join(api_product.get("url", "").split("/")[:-1])
+                try:
+                    db_product = ProductDb.objects.get(url__startswith=url_prefix)
+                    self._save(db_product, api_product)
+                except ProductDb.DoesNotExist:
+                    continue
 
-    page = 1
-    response = requests.get('https://world.openfoodfacts.org/cgi/search.pl', params={
-        'tagtype_0': 'categories',
-        'tag_contains_0': 'contains',
-        'tag_0': category['id'],
-        'json': 1,
-        'page_size': 50,
-        'action': 'process',
-        'page': page
-    })
-    data = response.json()
-    api_prod = data['products']
-
-    for product in api_prod:
-        if product['url'] in db_prod:
-            #print(product['product_name'])
-            save_product(product)
-
-    page += 1
-
-
-def save_product(api_product):
-    db_product = ProductDb.objects.get_prod(api_product)
-
-    db_product.name = api_product['product_name']
-    db_product.nutriscore = api_product['nutrition_grades']
-    db_product.image = api_product['image_front_url']
-    db_product.fat = api_product['nutriments']['fat']
-    db_product.saturated_fat = api_product['nutriments']['saturated-fat']
-    db_product.sugar = api_product['nutriments']['sugars']
-    db_product.salt = api_product['nutriments']['salt']
-    db_product.save()
-    print('\nLe produit ' + db_product.name + ' a été mis à jour.')
+    def _save(self, db_product, api_product):
+        db_product.name = api_product.get('product_name', db_product.name)
+        db_product.nutriscore = api_product.get('nutrition_grades', db_product.nutriscore)
+        db_product.image = api_product.get('image_front_url', db_product.image)
+        db_product.fat = api_product['nutriments'].get('fat', db_product.fat)
+        db_product.saturated_fat = api_product['nutriments'].get('saturated-fat', db_product.saturated_fat)
+        db_product.sugar = api_product['nutriments'].get('sugars', db_product.sugar)
+        db_product.salt = api_product['nutriments'].get('salt', db_product.salt)
+        db_product.save()
+        print('\nLe produit ' + db_product.name + ' a été mis à jour.')

@@ -27,13 +27,14 @@ class CategoryDb(BaseModel):
 
 class ProductManager(models.Manager):
     def select_prod(self, category):
-        return self.filter(category_id__name=category['name']).values_list('url', flat=True)
+        return self.filter(category_id__name=category).values_list('url', flat=True)
 
     def get_prod(self, product):
         return self.get(url=product['url'])
 
 
 class ProductDb(BaseModel):
+    DoesNotExist = None
     name = models.CharField(max_length=255)
     url = models.URLField(max_length=255)
     image = models.URLField(max_length=255)
