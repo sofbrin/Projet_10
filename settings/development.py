@@ -11,7 +11,17 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk import capture_message
 
+sentry_sdk.init(
+    dsn="https://3526c4ec453d44288df93efd008c7f80@o385566.ingest.sentry.io/5231165",
+    integrations=[DjangoIntegration()],
+    send_default_pii=True
+)
+#sentry warning message about crontab database update
+capture_message('La mise à jour de la base de données a bien eu lieu')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
